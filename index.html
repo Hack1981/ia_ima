@@ -2,142 +2,418 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IA Image Studio</title>
+
+<!-- Fontes e Ícones do Google -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
 
 <style>
     :root {
-        --bg-color: #0f172a;
-        --chat-bg: #1e293b;
-        --accent: #38bdf8;
-        --text: #f1f5f9;
+        /* Paleta estilo Gemini Dark Mode */
+        --bg-color: #131314;
+        --surface-color: #1e1f20;
+        --surface-hover: #333537;
+        --text-primary: #e3e3e3;
+        --text-secondary: #c4c7c5;
+        --accent-color: #a8c7fa; /* Azul suave do Google */
+        --user-msg-bg: #282a2c;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        -webkit-tap-highlight-color: transparent;
     }
 
     body {
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: var(--bg-color);
-        color: var(--text);
+        color: var(--text-primary);
         display: flex;
         flex-direction: column;
         height: 100vh;
+        height: 100dvh; /* Para navegadores mobile */
+        overflow: hidden;
     }
 
+    /* Top Bar Minimalista */
     .header {
-        padding: 20px;
-        background: #0f172a;
-        text-align: center;
-        font-size: 24px;
-        font-weight: bold;
-        border-bottom: 1px solid #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        background: transparent;
+        z-index: 10;
     }
 
+    .logo {
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-primary);
+    }
+
+    .logo span {
+        color: var(--accent-color);
+    }
+
+    .btn-icon {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .btn-icon:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
+
+    /* Área do Chat */
     .chat {
         flex: 1;
         overflow-y: auto;
-        padding: 20px;
+        padding: 0 20px 120px 20px; /* Espaço em baixo para o input flutuante */
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 32px;
+        scroll-behavior: smooth;
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
     }
 
-    .msg {
-        background: var(--chat-bg);
-        padding: 15px;
-        border-radius: 12px;
-        border-left: 4px solid var(--accent);
+    /* Ocultar scrollbar visualmente, mas manter funcional */
+    .chat::-webkit-scrollbar {
+        width: 0px;
+    }
+
+    /* Mensagem do Usuário (Alinhada a direita) */
+    .msg-user {
+        align-self: flex-end;
+        background: var(--user-msg-bg);
+        padding: 14px 20px;
+        border-radius: 24px;
+        max-width: 85%;
+        font-size: 15px;
+        line-height: 1.5;
         animation: fadeIn 0.3s ease;
     }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+    /* Mensagem da IA (Alinhada a esquerda) */
+    .msg-ai {
+        align-self: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 100%;
+        width: 100%;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .ai-icon {
+        color: var(--accent-color);
+    }
+
+    /* Container da Imagem */
+    .img-container {
+        border-radius: 16px;
+        overflow: hidden;
+        max-width: 512px; /* Tamanho base ideal */
+        background: var(--surface-color);
+    }
 
     img {
-        max-width: 100%;
-        border-radius: 8px;
-        margin-top: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+        transition: transform 0.3s ease;
+    }
+
+    /* Efeito de Loading do Google */
+    .skeleton-loader {
+        width: 100%;
+        max-width: 512px;
+        aspect-ratio: 1 / 1;
+        background: linear-gradient(90deg, var(--surface-color) 25%, #2a2c2f 50%, var(--surface-color) 75%);
+        background-size: 200% 100%;
+        animation: loadingShimmer 1.5s infinite linear;
+        border-radius: 16px;
+    }
+
+    @keyframes loadingShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Botões de Ação na imagem */
+    .action-chips {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface-color);
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .chip:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
+
+    .chip span {
+        font-size: 18px; /* Tamanho do ícone */
+    }
+
+    /* Barra de Input Estilo Gemini */
+    .input-wrapper {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(to top, var(--bg-color) 70%, transparent);
+        display: flex;
+        justify-content: center;
     }
 
     .input-bar {
-        padding: 20px;
-        background: #0f172a;
+        width: 100%;
+        max-width: 820px;
+        background: var(--surface-color);
+        border-radius: 32px;
         display: flex;
-        gap: 10px;
-        border-top: 1px solid #334155;
+        align-items: center;
+        padding: 8px 8px 8px 24px;
+        gap: 12px;
+        transition: background 0.3s;
+    }
+
+    .input-bar:focus-within {
+        background: var(--surface-hover);
     }
 
     input {
         flex: 1;
-        padding: 12px;
-        border: 1px solid #334155;
-        border-radius: 8px;
-        background: #1e293b;
-        color: white;
-    }
-
-    button {
-        padding: 10px 20px;
         border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
+        background: transparent;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-family: inherit;
+        outline: none;
+        padding: 10px 0;
     }
 
-    .btn-send { background: var(--accent); color: #000; }
-    .btn-send:hover { opacity: 0.9; }
-    .btn-clear { background: #ef4444; color: white; }
+    input::placeholder {
+        color: var(--text-secondary);
+    }
+
+    .btn-send {
+        background: transparent;
+        color: var(--text-secondary);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    /* Quando há texto, o botão acende */
+    .input-bar:focus-within .btn-send,
+    input:not(:placeholder-shown) + .btn-send {
+        background: var(--text-primary);
+        color: var(--bg-color);
+    }
+
+    .btn-send:hover {
+        transform: scale(1.05);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .chat {
+            padding: 0 16px 100px 16px;
+            gap: 24px;
+        }
+
+        .msg-user {
+            max-width: 90%;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            padding: 12px;
+        }
+
+        .input-bar {
+            padding: 6px 6px 6px 16px;
+        }
+
+        input {
+            font-size: 15px;
+        }
+    }
 </style>
 </head>
 
 <body>
 
-<div class="header">✨ IA Image Studio</div>
+<div class="header">
+    <div class="logo">
+        <span class="material-symbols-rounded">auto_awesome</span>
+        Image Studio
+    </div>
+    <button class="btn-icon" onclick="clearChat()" title="Limpar conversa">
+        <span class="material-symbols-rounded">delete</span>
+    </button>
+</div>
 
-<div class="chat" id="chat"></div>
+<div class="chat" id="chat">
+    <!-- Mensagem de boas-vindas -->
+    <div class="msg-ai">
+        <div class="ai-header">
+            <span class="material-symbols-rounded ai-icon">auto_awesome</span>
+            Olá! O que vamos criar hoje?
+        </div>
+    </div>
+</div>
 
-<div class="input-bar">
-    <input id="prompt" placeholder="Descreva a imagem que deseja gerar..." />
-    <button class="btn-send" onclick="send()">Gerar</button>
-    <button class="btn-clear" onclick="clearChat()">Limpar</button>
+<div class="input-wrapper">
+    <div class="input-bar">
+        <input id="prompt" placeholder="Descreva a imagem que deseja gerar..." onkeydown="if(event.key === 'Enter') send()" autocomplete="off" />
+        <button class="btn-send" onclick="send()">
+            <span class="material-symbols-rounded">arrow_upward</span>
+        </button>
+    </div>
 </div>
 
 <script>
 async function send() {
     let input = document.getElementById("prompt");
     let chat = document.getElementById("chat");
-    let prompt = input.value;
+    let prompt = input.value.trim();
 
     if (!prompt) return;
 
-    // Criar elemento de mensagem
-    let msg = document.createElement("div");
-    msg.className = "msg";
-    msg.innerHTML = "⏳ Gerando: <i>" + prompt + "</i>...";
-    chat.appendChild(msg);
+    // 1. Cria a mensagem do Usuário
+    let userMsg = document.createElement("div");
+    userMsg.className = "msg-user";
+    userMsg.innerText = prompt;
+    chat.appendChild(userMsg);
+
+    // 2. Limpa o input e rola para baixo
     input.value = "";
+    chat.scrollTop = chat.scrollHeight;
+
+    // 3. Cria a mensagem de resposta da IA (Estado de Carregamento)
+    let aiMsg = document.createElement("div");
+    aiMsg.className = "msg-ai";
+    aiMsg.innerHTML = `
+        <div class="ai-header">
+            <span class="material-symbols-rounded ai-icon">auto_awesome</span>
+            Gerando imagem...
+        </div>
+        <div class="skeleton-loader"></div>
+    `;
+    chat.appendChild(aiMsg);
     chat.scrollTop = chat.scrollHeight;
 
     try {
         let startTime = Date.now();
+        // Chamada real para sua API
         let res = await fetch("/ia_img?prompt=" + encodeURIComponent(prompt));
+        
+        if (!res.ok) throw new Error("Erro na requisição");
+        
         let blob = await res.blob();
         let url = URL.createObjectURL(blob);
         let time = ((Date.now() - startTime) / 1000).toFixed(2);
 
-        msg.innerHTML = `
-            <div><b>Prompt:</b> ${prompt}</div>
-            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Tempo: ${time}s</div>
-            <img src="${url}" />
+        // 4. Atualiza a mensagem da IA com a imagem gerada
+        aiMsg.innerHTML = `
+            <div class="ai-header">
+                <span class="material-symbols-rounded ai-icon">auto_awesome</span>
+                Aqui está a sua imagem:
+            </div>
+            <div class="img-container">
+                <img src="${url}" alt="${prompt}" />
+            </div>
+            <div class="action-chips">
+                <a href="${url}" download="IA-Image-${Date.now()}.png" class="chip">
+                    <span class="material-symbols-rounded">download</span>
+                    Baixar
+                </a>
+                <div class="chip" style="cursor: default;">
+                    <span class="material-symbols-rounded">timer</span>
+                    ${time}s
+                </div>
+            </div>
         `;
     } catch (e) {
-        msg.innerHTML = "❌ Erro ao gerar imagem.";
+        // Trata erro de forma elegante
+        aiMsg.innerHTML = `
+            <div class="ai-header" style="color: #ef4444;">
+                <span class="material-symbols-rounded">error</span>
+                Não foi possível gerar a imagem
+            </div>
+            <p style="font-size: 14px; color: var(--text-secondary);">Ocorreu um erro no servidor. Tente novamente com outro prompt.</p>
+        `;
     }
     chat.scrollTop = chat.scrollHeight;
 }
 
 function clearChat() {
-    document.getElementById("chat").innerHTML = "";
+    let chat = document.getElementById("chat");
+    chat.innerHTML = `
+        <div class="msg-ai">
+            <div class="ai-header">
+                <span class="material-symbols-rounded ai-icon">auto_awesome</span>
+                Pronto! Histórico limpo. O que vamos criar agora?
+            </div>
+        </div>
+    `;
 }
 </script>
 
