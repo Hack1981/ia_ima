@@ -81,12 +81,8 @@ def ia_img(prompt: str = Query(...)):
 # =========================
 @app.get("/", response_class=HTMLResponse)
 def home():
-    html_path = BASE_DIR / "index.html"
-
-    with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-
-    return HTMLResponse(content=html_content)
+    with open("index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
 
 # =========================
 # START SERVER (UVICORN)
