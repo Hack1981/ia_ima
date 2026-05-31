@@ -11,7 +11,7 @@ Este projeto cria uma API + interface web onde você pode:
 * Gerar imagens a partir de prompts de texto
 * Usar Stable Diffusion (DreamShaper 8)
 * Acompanhar tempo de geração
-* Interagir via chat estilo “estúdio de imagens”
+* Acessar via link público (Cloudflare Tunnel)
 
 ---
 
@@ -24,10 +24,11 @@ Este projeto cria uma API + interface web onde você pode:
 * 🎨 DreamShaper-8
 * 🌐 HTML + JS (frontend embutido)
 * 🚀 Uvicorn
+* ☁️ Cloudflare Tunnel
 
 ---
 
-## 📦 Instalação (Google Colab / Notebook)
+## 📦 Instalação (Google Colab / Linux)
 
 ### 1️⃣ Clonar o projeto
 
@@ -46,7 +47,7 @@ Este projeto cria uma API + interface web onde você pode:
 
 ---
 
-### 3️⃣ Iniciar o servidor
+### 3️⃣ Iniciar o projeto
 
 ```bash
 !bash start.sh
@@ -56,15 +57,11 @@ Este projeto cria uma API + interface web onde você pode:
 
 ## 🌐 Como funciona
 
-Após iniciar o servidor:
+Após rodar o projeto:
 
-* Acesse:
-
-```
-http://localhost:8888
-```
-
-ou no Colab via túnel (se configurado)
+* API local: `http://localhost:8888`
+* Cloudflare gera automaticamente um link público
+* Logs do servidor aparecem em tempo real
 
 ---
 
@@ -95,33 +92,27 @@ X-Generation-Time: 3.42
 
 ## 🖥️ Interface Web
 
-A interface inclui:
-
 * 💬 Chat estilo IA
-* ⏳ Status de geração em tempo real
-* 🖼️ Renderização automática da imagem
-* 🧹 Botão para limpar conversa
-* 🎨 Tema escuro moderno
+* 🖼️ Geração de imagens em tempo real
+* ⏳ Feedback de geração
+* 🧹 Botão de limpar chat
+* 🎨 Interface moderna em tema escuro
 
 ---
 
-## ⚙️ Código principal
-
-O servidor usa:
+## ⚙️ Modelo IA
 
 * Modelo: `Lykon/dreamshaper-8`
 * Scheduler: `EulerAncestralDiscreteScheduler`
 * Otimizações:
 
-  * `enable_attention_slicing()`
-  * `enable_vae_slicing()`
-  * `torch.float16 (CUDA)`
+  * attention slicing
+  * vae slicing
+  * float16 CUDA
 
 ---
 
-## 📡 FastAPI Server
-
-O servidor roda em:
+## 📡 Execução do servidor
 
 ```python
 uvicorn.run(app, host="0.0.0.0", port=8888)
@@ -136,31 +127,26 @@ ia_ima/
 │
 ├── instalador.sh
 ├── start.sh
-├── main.py (FastAPI + IA)
+├── main.py
 └── README.md
 ```
 
 ---
 
-## ⚡ Exemplo de uso
+## ⚡ Fluxo de uso
 
-Prompt:
-
-```
-um castelo flutuando no céu com luzes neon e nuvens douradas
-```
-
-Resultado:
-
-🖼️ Imagem gerada em poucos segundos com IA
+1. Clona o repositório
+2. Executa `instalador.sh`
+3. Executa `start.sh`
+4. Acessa o link gerado pelo Cloudflare
 
 ---
 
 ## 📌 Observações
 
 * Requer GPU (CUDA recomendado)
-* Ideal para Colab ou servidores com GPU
-* Modelos podem demorar na primeira execução
+* Primeira execução pode demorar
+* Link do Cloudflare é temporário
 
 ---
 
