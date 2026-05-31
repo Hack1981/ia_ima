@@ -3,6 +3,8 @@ import time
 from fastapi import FastAPI, Query
 from fastapi.responses import Response, HTMLResponse
 from diffusers import StableDiffusionPipeline, EulerAncestralDiscreteScheduler
+from pathlib import Path
+from fastapi.responses import HTMLResponse
 
 # =========================
 # APP
@@ -79,153 +81,12 @@ def ia_img(prompt: str = Query(...)):
 # =========================
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IA Image Studio</title>
+    html_path = BASE_DIR / "index.html"
 
-<style>
-    :root {
-        --bg-color: #0f172a;
-        --chat-bg: #1e293b;
-        --accent: #38bdf8;
-        --text: #f1f5f9;
-    }
+    with open(html_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
 
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: var(--bg-color);
-        color: var(--text);
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-    }
-
-    .header {
-        padding: 20px;
-        background: #0f172a;
-        text-align: center;
-        font-size: 24px;
-        font-weight: bold;
-        border-bottom: 1px solid #334155;
-    }
-
-    .chat {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .msg {
-        background: var(--chat-bg);
-        padding: 15px;
-        border-radius: 12px;
-        border-left: 4px solid var(--accent);
-        animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-
-    img {
-        max-width: 100%;
-        border-radius: 8px;
-        margin-top: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
-    }
-
-    .input-bar {
-        padding: 20px;
-        background: #0f172a;
-        display: flex;
-        gap: 10px;
-        border-top: 1px solid #334155;
-    }
-
-    input {
-        flex: 1;
-        padding: 12px;
-        border: 1px solid #334155;
-        border-radius: 8px;
-        background: #1e293b;
-        color: white;
-    }
-
-    button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-    }
-
-    .btn-send { background: var(--accent); color: #000; }
-    .btn-send:hover { opacity: 0.9; }
-    .btn-clear { background: #ef4444; color: white; }
-</style>
-</head>
-
-<body>
-
-<div class="header">✨ IA Image Studio</div>
-
-<div class="chat" id="chat"></div>
-
-<div class="input-bar">
-    <input id="prompt" placeholder="Descreva a imagem que deseja gerar..." />
-    <button class="btn-send" onclick="send()">Gerar</button>
-    <button class="btn-clear" onclick="clearChat()">Limpar</button>
-</div>
-
-<script>
-async function send() {
-    let input = document.getElementById("prompt");
-    let chat = document.getElementById("chat");
-    let prompt = input.value;
-
-    if (!prompt) return;
-
-    // Criar elemento de mensagem
-    let msg = document.createElement("div");
-    msg.className = "msg";
-    msg.innerHTML = "⏳ Gerando: <i>" + prompt + "</i>...";
-    chat.appendChild(msg);
-    input.value = "";
-    chat.scrollTop = chat.scrollHeight;
-
-    try {
-        let startTime = Date.now();
-        let res = await fetch("/ia_img?prompt=" + encodeURIComponent(prompt));
-        let blob = await res.blob();
-        let url = URL.createObjectURL(blob);
-        let time = ((Date.now() - startTime) / 1000).toFixed(2);
-
-        msg.innerHTML = `
-            <div><b>Prompt:</b> ${prompt}</div>
-            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Tempo: ${time}s</div>
-            <img src="${url}" />
-        `;
-    } catch (e) {
-        msg.innerHTML = "❌ Erro ao gerar imagem.";
-    }
-    chat.scrollTop = chat.scrollHeight;
-}
-
-function clearChat() {
-    document.getElementById("chat").innerHTML = "";
-}
-</script>
-
-</body>
-</html>
-"""
+    return HTMLResponse(content=html_content)
 
 # =========================
 # START SERVER (UVICORN)
